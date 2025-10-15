@@ -121,6 +121,11 @@ function generateSparkline(startAmount, endAmount, startDate, endDate, cagr = 0.
     // Update document title
     document.title = `Receipt Regret — ${variant.name}`;
   })();
+
+// --- Defensive cleanup: remove any stale growth controls from manual details ---
+document.querySelector('#manual-details #growth-options')?.remove();
+document.querySelector('#manual-details .growth-cta')?.remove();
+document.querySelector('#manual-details #see-estimate')?.remove();
   
 // --- Wire up the form -------------------------------------------------
 
@@ -128,8 +133,8 @@ const form = document.getElementById("regret-form");
 const result = document.getElementById("result");
 const resultBody = document.getElementById("result-body");
 const ctaLink = document.getElementById("cta-link");
-const submitButton = form.querySelector('button[type="submit"]');
-const originalButtonText = submitButton.textContent;
+const submitButton = document.querySelector('#primary-growth-cta #see-estimate');
+const originalButtonText = submitButton?.textContent || 'See my estimate';
 
 const amountInput = document.getElementById("amount");
 const dateInput = document.getElementById("date");
@@ -249,15 +254,16 @@ function triggerConfetti(x, y) {
     dateInput.value = date;
     if (merchant) merchantInput.value = merchant;
     
-    // Set CAGR if provided
+    // Set growth rate if provided
     if (cagr) {
-      const cagrRadio = document.querySelector(`input[name="cagr"][value="${cagr}"]`);
-      if (cagrRadio) cagrRadio.checked = true;
+      const growthValue = Math.round(parseFloat(cagr) * 100); // Convert 0.07 to 7
+      const growthRadio = document.querySelector(`input[name="growth"][value="${growthValue}"]`);
+      if (growthRadio) growthRadio.checked = true;
     }
     
-    // Auto-submit the form after a brief delay
+    // Auto-submit after a brief delay
     setTimeout(() => {
-      form.requestSubmit();
+      submitButton.click();
     }, 100);
   }
 })();
@@ -276,7 +282,10 @@ function hideError(errorElement) {
 amountInput.addEventListener("input", () => hideError(amountError));
 dateInput.addEventListener("input", () => hideError(dateError));
 
-form.addEventListener("submit", async (e) => {
+// Ensure click handler is bound to #see-estimate in #primary-growth-cta only
+const selectedGrowth = () => document.querySelector('#primary-growth-cta input[name="growth"]:checked');
+
+submitButton?.addEventListener("click", async (e) => {
   e.preventDefault();
 
   // Clear previous errors
@@ -287,10 +296,10 @@ form.addEventListener("submit", async (e) => {
   const spendDate = dateInput.value;
   const merchant = document.getElementById("merchant").value;
   
-  // Get selected CAGR
-  const selectedCagr = document.querySelector('input[name="cagr"]:checked');
-  const cagr = parseFloat(selectedCagr.value);
-  const cagrLabel = selectedCagr.nextElementSibling.textContent;
+  // Get selected growth rate from primary CTA only
+  const sel = selectedGrowth();
+  const rate = sel ? Number(sel.value) / 100 : 0.07;
+  const cagrLabel = sel ? sel.parentElement.textContent.trim() : "Baseline 7%";
 
   // Validate amount
   if (!amount || amount <= 0) {
@@ -317,11 +326,10 @@ form.addEventListener("submit", async (e) => {
   submitButton.disabled = true;
   submitButton.classList.add('loading');
   submitButton.textContent = "Calculating…";
-  form.setAttribute('aria-busy', 'true');
 
   try {
     // "Analyze" (mock)
-    const res = await analyzeWhatIf({ amount, spendDate, merchant, cagr, cagrLabel });
+    const res = await analyzeWhatIf({ amount, spendDate, merchant, cagr: rate, cagrLabel });
 
     if (!res.ok) { 
       showError(amountError, "Something went wrong. Please try again.");
@@ -337,7 +345,7 @@ form.addEventListener("submit", async (e) => {
     
     // Generate sparkline
     const todayISO = new Date().toISOString().slice(0, 10);
-    const sparkline = generateSparkline(a, tv, spendDate, todayISO, cagr, cagrLabel);
+    const sparkline = generateSparkline(a, tv, spendDate, todayISO, rate, cagrLabel);
     
     // Calculate default weekly amount (clamped between $5-$50)
     const defaultWeekly = Math.max(5, Math.min(50, Math.round(a)));
@@ -428,7 +436,7 @@ form.addEventListener("submit", async (e) => {
       shareParams.set("amount", a);
       shareParams.set("date", spendDate);
       if (merchant) shareParams.set("merchant", merchant);
-      shareParams.set("cagr", cagr);
+      shareParams.set("cagr", rate);
       
       // Include variant if not default
       const currentVariant = params.get("v");
@@ -471,7 +479,6 @@ form.addEventListener("submit", async (e) => {
     submitButton.disabled = false;
     submitButton.classList.remove('loading');
     submitButton.textContent = originalButtonText;
-    form.setAttribute('aria-busy', 'false');
   }
 });
 
