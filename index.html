@@ -1,14 +1,285 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Receipt Regret</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <h1>Receipt Regret</h1>
-    <div id="app"></div>
-    <script src="main.js" type="module"></script>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Receipt Regret — Demo</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="site-header">
+    <div class="wrap">
+      <span class="logo">STASH</span>
+      <div class="actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <a href="#">Log in</a>
+        <a href="#" class="btn primary">Get started</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-section">
+    <header class="wrap">
+      <p class="eyebrow">Receipt Regret (demo)</p>
+      <h1 id="hero-title">Turn yesterday's spend into tomorrow's peace of mind.</h1>
+      <p id="hero-sub">See what a past purchase might be worth today—and automate the better choice going forward.</p>
+    </header>
+  </div>
+
+  <section id="receipt-section" class="wrap section dropzone-section">
+    <section class="card dropzone" id="dropzone">
+      <div class="dropzone-content">
+        <div class="dropzone-icon">📷</div>
+        <h2>Add your receipt</h2>
+        <p class="dropzone-subcopy">Drag a photo here, paste from clipboard, or use your camera.</p>
+        
+        <div class="actions">
+          <button type="button" id="btn-take-photo" class="btn camera">Take a photo</button>
+          <button type="button" id="btn-upload" class="btn secondary">Upload image</button>
+        </div>
+        
+        <input type="file" id="file-input" accept="image/*" capture="environment" hidden />
+        
+        <p class="dropzone-tip">We only show a preview in this demo. Nothing is uploaded.</p>
+        <p class="privacy-tip">
+          <a href="#" id="privacy-tip-link">💡 Hide personal info: you can blur with your phone editor before uploading.</a>
+        </p>
+        
+        <div id="dropzone-error" class="error-text" hidden></div>
+        <div id="scan-status" class="scan-status" hidden>
+          <div class="scan-progress"></div>
+          <p>Scanning receipt (demo)…</p>
+        </div>
+      </div>
+      
+      <div id="preview" class="preview" hidden></div>
+      <p class="dropzone-disclaimer">Illustrative only. This demo uses a basic simulation—no data leaves your device.</p>
+    </section>
+  </section>
+
+  <section id="details-and-benefits" class="wrap grid-2">
+    <section class="card" id="try-it">
+      <h2>Details (optional)</h2>
+      
+      <details id="manual-details">
+        <summary>
+          <span>Edit or enter manually</span>
+          <span class="hint" id="manual-hint" hidden>We filled these from your receipt (demo)</span>
+        </summary>
+        
+        <form id="regret-form">
+          <label>
+            Amount spent ($)
+            <input type="number" step="0.01" min="0.01" id="amount" required placeholder="e.g., 12.75" />
+            <span class="error-text" id="amount-error" hidden></span>
+          </label>
+
+          <label>
+            Date of purchase
+            <input type="date" id="date" required />
+            <span class="error-text" id="date-error" hidden></span>
+          </label>
+
+          <label>
+            Merchant (optional)
+            <input type="text" id="merchant" placeholder="e.g., Starbucks" />
+          </label>
+
+          <!-- Optional: "upload receipt" for later; not used yet -->
+          <label class="file" id="manual-upload-row">
+            Upload receipt (optional)
+            <input type="file" id="receipt" accept="image/*" />
+          </label>
+
+          <fieldset class="cagr-toggle">
+            <legend>Growth assumption</legend>
+            <div class="segmented-control">
+              <input type="radio" id="cagr-5" name="cagr" value="0.05" />
+              <label for="cagr-5">Conservative 5%</label>
+              
+              <input type="radio" id="cagr-7" name="cagr" value="0.07" checked />
+              <label for="cagr-7">Baseline 7%</label>
+              
+              <input type="radio" id="cagr-9" name="cagr" value="0.09" />
+              <label for="cagr-9">Optimistic 9%</label>
+            </div>
+          </fieldset>
+
+          <button type="submit">See my estimate</button>
+          <p class="hint">You can change or cancel any time.</p>
+        </form>
+      </details>
+    </section>
+
+    <section class="card benefits">
+      <ul>
+        <li><strong>Automate it</strong> — Set it, forget it, and stay consistent.</li>
+        <li><strong>Think long-term</strong> — Small habits compound into big outcomes.</li>
+        <li><strong>In control</strong> — Change or cancel any time. 🔒</li>
+      </ul>
+    </section>
+  </section>
+
+  <main class="wrap">
+    <section class="card result" id="result" hidden role="status" aria-live="polite">
+      <h2>Result</h2>
+      <div id="result-body" class="result-body"></div>
+
+      <details class="disclosure">
+        <summary>How we calculate</summary>
+        <div class="disclosure-content">
+          <div class="disclosure-group">
+            <h4>Assumptions</h4>
+            <ul>
+              <li>You invested the full amount on the purchase date</li>
+              <li>Constant 7% annual growth rate (CAGR), compounding daily</li>
+              <li>Broad, diversified market proxy (e.g., S&P 500 equivalent)</li>
+            </ul>
+          </div>
+          
+          <div class="disclosure-group">
+            <h4>Limitations</h4>
+            <ul>
+              <li>Past performance does not guarantee future results</li>
+              <li>Real returns vary based on timing, market conditions, and fund selection</li>
+              <li>Does not account for inflation, fees, or taxes</li>
+            </ul>
+          </div>
+          
+          <div class="disclosure-group">
+            <h4>What this is not</h4>
+            <ul>
+              <li>Not a prediction or guarantee of actual investment returns</li>
+              <li>Not personalized financial or investment advice</li>
+              <li>Not a substitute for professional financial planning</li>
+            </ul>
+          </div>
+        </div>
+      </details>
+
+      <div class="cta">
+        <a id="cta-link" href="#" target="_blank" rel="noopener" aria-label="Automate weekly investment">Automate the better choice</a>
+        <p class="cta-sub">You can change or cancel any time.</p>
+      </div>
+      
+      <div class="share-result">
+        <button type="button" id="share-link" class="share-link" aria-label="Share this result by copying link to clipboard">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+          </svg>
+          Share this result
+        </button>
+        <span class="share-tooltip" id="share-tooltip" hidden role="status" aria-live="polite">Copied!</span>
+      </div>
+    </section>
+  </main>
+
+  <section class="wrap" id="faq">
+    <div class="card faq-card">
+      <h2>Frequently Asked Questions</h2>
+      
+      <details class="faq-item">
+        <summary>Is this real investing?</summary>
+        <div class="faq-answer">
+          <p>This is a demo that shows hypothetical calculations. The tool illustrates what <em>might</em> have happened if you'd invested instead of spending—but it's not actual investing.</p>
+          <p>Real investing requires opening an account with a brokerage or investment platform, choosing specific funds or assets, and managing ongoing contributions. This demo is meant to inspire better financial habits, not replace professional guidance.</p>
+        </div>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Why show long-term growth?</summary>
+        <div class="faq-answer">
+          <p>Small, everyday purchases add up over time. By visualizing how those dollars could have grown with compound interest, we help you see the long-term impact of your spending choices.</p>
+          <p>The goal isn't to cause regret—it's to inspire forward-thinking habits. Even modest, consistent investing can build meaningful wealth over years.</p>
+        </div>
+      </details>
+      
+      <details class="faq-item">
+        <summary>What about fees and taxes?</summary>
+        <div class="faq-answer">
+          <p>This demo uses a simplified 7% CAGR and does not factor in investment fees, taxes, or inflation. In reality, you'd need to consider:</p>
+          <ul>
+            <li><strong>Management fees</strong> — Funds and platforms charge fees that reduce net returns</li>
+            <li><strong>Taxes</strong> — Capital gains, dividends, and withdrawals may be taxable</li>
+            <li><strong>Inflation</strong> — The purchasing power of your money changes over time</li>
+          </ul>
+          <p>For accurate planning, consult with a financial advisor or use tools that account for these factors.</p>
+        </div>
+      </details>
+      
+      <details class="faq-item">
+        <summary>Is my data sent anywhere?</summary>
+        <div class="faq-answer">
+          <p>No. All calculations in this demo run entirely in your browser using JavaScript. Nothing is sent to a server, and no data is stored or tracked.</p>
+          <p>You can verify this by opening your browser's Network tab in Developer Tools—you'll see no API calls are made when you submit the form. This is a privacy-first, client-side demo.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <div class="trust-strip">
+    <div class="wrap">
+      <div class="trust-badges">
+        <div class="trust-badge">
+          <span class="trust-icon">📊</span>
+          <span class="trust-text">Illustrative only</span>
+        </div>
+        <div class="trust-badge">
+          <span class="trust-icon">⚖️</span>
+          <span class="trust-text">No advice</span>
+        </div>
+        <div class="trust-badge">
+          <span class="trust-icon">🔒</span>
+          <span class="trust-text">Privacy-respecting demo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="wrap foot">
+    <p class="disclaimer">
+      This is a demonstration tool for educational and illustrative purposes only. It is not intended to provide financial, investment, tax, or legal advice. The calculations shown are hypothetical and do not represent actual investment returns or guarantees of future performance. Past performance does not predict future results. Always consult with a qualified financial professional before making investment decisions.
+    </p>
+    <p class="copyright">© 2025 Receipt Regret Demo</p>
+  </footer>
+
+  <div class="sticky-cta-bar" id="sticky-cta-bar" hidden role="region" aria-label="Quick action bar">
+    <div class="sticky-cta-content">
+      <a href="#" class="sticky-cta-button" id="sticky-cta-button" aria-label="Automate weekly investment">Automate the better choice</a>
+      <p class="sticky-cta-sub">You can change or cancel any time.</p>
+    </div>
+  </div>
+
+  <!-- Privacy Tips Modal -->
+  <div id="privacy-modal" class="modal" hidden>
+    <div class="modal-content">
+      <button id="close-modal" class="close" aria-label="Close">×</button>
+      <h3>Protect Your Privacy</h3>
+      <p>Before uploading a receipt, consider these tips to protect your personal information:</p>
+      <ul>
+        <li><strong>Blur sensitive details</strong> — Use your phone's photo editor to blur credit card numbers, full names, or addresses before uploading.</li>
+        <li><strong>Crop what you don't need</strong> — Focus on just the transaction details (amount, merchant, date).</li>
+        <li><strong>Check the image</strong> — Make sure no sensitive info is visible in the background or reflections.</li>
+      </ul>
+      <p class="modal-note">Remember: This is a demo. Your images stay on your device and are never uploaded to a server.</p>
+    </div>
+  </div>
+
+  <script src="./main.js"></script>
+</body>
 </html>
