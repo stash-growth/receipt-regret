@@ -924,7 +924,23 @@ body { padding-top: 64px; }
     font-weight: 700;
   }
   
-  label { display: grid; gap: 6px; margin: 10px 0; }
+  label { display: grid; gap: 6px; margin: 10px 0; font-weight: 500; }
+  
+  /* Form accessibility improvements */
+  input, button, select, textarea {
+    font: inherit;
+  }
+  
+  input:focus, select:focus, textarea:focus, button:focus {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  
+  /* Improve dark-mode contrast for disabled inputs */
+  input:disabled, button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
   
   /* Badge for detected fields */
   .badge.demo {
